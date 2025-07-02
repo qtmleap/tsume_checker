@@ -56,7 +56,7 @@ export default function RootLayout({
           rel='stylesheet'
         />
       </head>
-      <body>
+      <body className='bg-muted'>
         <Providers>{children}</Providers>
       </body>
     </html>
