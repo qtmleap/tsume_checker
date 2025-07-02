@@ -11,30 +11,13 @@
     "includes": ["**", "!**/src/components/ui/**/*.tsx"],
     "rules": {
       "recommended": true,
-      "suspicious": {
-        "noArrayIndexKey": "off"
-      },
+      "suspicious": {},
       "nursery": {},
-      "correctness": {
-        "noUnusedImports": "error",
-        "noUnusedVariables": "error",
-        "noUnusedLabels": "error"
-      },
-      "style": {
-        "noParameterAssign": "error",
-        "useAsConstAssertion": "error",
-        "useDefaultParameterLast": "error",
-        "useEnumInitializers": "error",
-        "useSelfClosingElements": "error",
-        "useSingleVarDeclarator": "error",
-        "noUnusedTemplateLiteral": "error",
-        "useNumberNamespace": "error",
-        "noInferrableTypes": "error",
-        "noUselessElse": "error"
-      }
+      "correctness": {},
+      "style": {}
     }
   },
-  "assist": { "actions": { "source": { "organizeImports": "off" } } },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "javascript": {
     "parser": {
       "unsafeParameterDecoratorsEnabled": true

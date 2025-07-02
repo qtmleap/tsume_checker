@@ -1,20 +1,21 @@
 'use client'
 
-import Link from 'next/link'
-import FormTextarea from '@/components/form/textarea'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { InputSchema, InputSchemaDefaultValue } from '@/models/input.dto'
-import { Form } from '@/components/ui/form'
-import { Button } from '@/components/ui/button'
-import { client } from '@/lib/client'
+import { parse } from 'csv-parse/sync'
+import { Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
-import { AxiosError } from 'axios'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import type { ResultSchema } from '@/models/result.dto'
-import { createRecord } from '@/lib/record'
-import type { Record } from 'tsshogi'
+import FormTextarea from '@/components/form/textarea'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Form } from '@/components/ui/form'
+import { db, type Mate } from '@/lib/db'
 import { toSHA256Hash } from '@/lib/hash'
+import { createRecord } from '@/lib/record'
+import { InputSchema, InputSchemaDefaultValue } from '@/models/input.dto'
+import type { ResultSchema } from '@/models/result.dto'
 
 export default function Page() {
   const form = useForm<InputSchema>({
@@ -22,24 +23,42 @@ export default function Page() {
     defaultValues: InputSchemaDefaultValue
   })
   const { control } = form
-  const [_result, setResult] = useState<ResultSchema | null>(null)
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+  const [_result, _setResult] = useState<ResultSchema | null>(null)
+
+  const onClick = async () => {
+    const response = await fetch('data/20250701.csv')
+    const text = await response.text()
+    const results = parse(text, { columns: true, skip_empty_lines: true, trim: true })
+    try {
+      await db.mates.bulkPut(
+        // biome-ignore lint/suspicious/noExplicitAny: ignore
+        results.map((result: any) => ({
+          opus_no: Number.parseInt(result.opus_no, 10),
+          hash: result.hash,
+          source: result.source
+        }))
+      )
+      toast.success('データベースを更新しました', {
+        duration: 3000
+      })
+    } catch (error) {
+      console.error('Error updating database:', error)
+      if (error instanceof Error) {
+        toast.error('データベースの更新に失敗しました')
+      }
+    } finally {
+      setDialogOpen(false)
+    }
+  }
 
   const onSubmit = async (data: InputSchema) => {
-    try {
-      const record: Record = createRecord(data)
-      const hash: string = await toSHA256Hash(record)
-      setResult(await client.post('/hash', { hash }))
-    } catch (error) {
-      console.error('Error fetching result:', error)
-      if (error instanceof AxiosError) {
-        if (error.status === 404) {
-          toast('同一作品は見つかりませんでした')
-          return
-        }
-      }
-      if (error instanceof Error) {
-        toast.error('エラーが発生しました')
-      }
+    const hash: string = await toSHA256Hash(createRecord(data))
+    const result: Mate | undefined = await db.mates.get(hash)
+    if (result === undefined) {
+      toast.success('同一作品は見つかりませんでした')
+    } else {
+      toast.info('同一作品が見つかりました')
     }
   }
 
@@ -68,8 +87,25 @@ export default function Page() {
             required
             placeholder='棋譜情報を入力してください'
           />
-          <div className='flex justify-center mt-4'>
-            <Button type='submit' className='w-full max-w-xs'>
+          <div className='flex justify-center mt-4 gap-4'>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button type='button' variant='destructive' onClick={onClick}>
+                  データベース更新
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                className='flex flex-col items-center gap-4 select-none [&>[data-slot="dialog-close"]]:hidden'
+                onInteractOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+              >
+                <DialogTitle>データベース更新中</DialogTitle>
+                <DialogDescription />
+                <Loader2 className='h-8 w-8 animate-spin' />
+                <p className='text-sm'>しばらくお待ち下さい...</p>
+              </DialogContent>
+            </Dialog>
+            <Button type='submit' className='w-full'>
               検索
             </Button>
           </div>
