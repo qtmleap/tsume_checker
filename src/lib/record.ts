@@ -1,4 +1,3 @@
-import type { InputSchema } from '@/models/input.dto'
 import {
   detectRecordFormat,
   importCSA,
@@ -9,6 +8,7 @@ import {
   Record,
   RecordFormatType
 } from 'tsshogi'
+import type { InputSchema } from '@/models/input.dto'
 
 export const createRecord = (data: InputSchema): Record => {
   const type: RecordFormatType = detectRecordFormat(data.content)

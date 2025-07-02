@@ -1,6 +1,6 @@
+import { makeApi, Zodios } from '@zodios/core'
 import { HashSchema } from '@/models/hash.dto'
 import { ResultSchema } from '@/models/result.dto'
-import { makeApi, Zodios } from '@zodios/core'
 
 const endpoints = makeApi([
   {

@@ -1,7 +1,7 @@
 'use client'
 
-import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
 import type * as SwitchPrimitive from '@radix-ui/react-switch'
+import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
 
 import { FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Switch } from '@/components/ui/switch'

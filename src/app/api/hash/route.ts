@@ -1,6 +1,6 @@
-import { HashSchema } from '@/models/hash.dto'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from 'redis'
+import { HashSchema } from '@/models/hash.dto'
 
 const redis = await createClient({ url: process.env.REDIS_URL }).connect()
 

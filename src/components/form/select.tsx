@@ -1,10 +1,9 @@
 'use client'
 
+import type * as SelectPrimitive from '@radix-ui/react-select'
 import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
-
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type * as SelectPrimitive from '@radix-ui/react-select'
 
 type SelectProps<T extends FieldValues> = React.ComponentProps<typeof SelectPrimitive.Root> & {
   label?: string
