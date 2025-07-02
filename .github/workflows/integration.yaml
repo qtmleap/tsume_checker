@@ -48,6 +48,19 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            bun.lockb
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Test
         run: |
           bun test
@@ -71,8 +84,10 @@ jobs:
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lockb') }}
           restore-keys: |
             bun-${{ runner.os }}-
-      - name: Install
-        run: bun install --ignore-scripts
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
         env:
           REDIS_URL: ${{ secrets.REDIS_URL }}
