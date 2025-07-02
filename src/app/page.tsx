@@ -8,14 +8,13 @@ import { InputSchema, InputSchemaDefaultValue } from '@/models/input.dto'
 import { Form } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { client } from '@/lib/client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 import type { ResultSchema } from '@/models/result.dto'
 import { createRecord } from '@/lib/record'
 import type { Record } from 'tsshogi'
 import { toSHA256Hash } from '@/lib/hash'
-import { initHashes } from '@/lib/indexedDb'
 
 export default function Page() {
   const form = useForm<InputSchema>({
@@ -24,10 +23,6 @@ export default function Page() {
   })
   const { control } = form
   const [_result, setResult] = useState<ResultSchema | null>(null)
-
-  useEffect(() => {
-    initHashes().catch(console.error)
-  }, [])
 
   const onSubmit = async (data: InputSchema) => {
     try {
