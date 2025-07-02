@@ -75,7 +75,7 @@ jobs:
         run: bun install --ignore-scripts
       - name: Build
         env:
-          REDIS_URL: {{ secrets.REDIS_URL }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
         run: |
           bun run build
   prune:
