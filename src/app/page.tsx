@@ -17,6 +17,11 @@ import {
   RecordFormatType
 } from 'tsshogi'
 import { client } from '@/lib/client'
+import { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { AxiosError } from 'axios'
+import { toast } from 'sonner'
+import type { ResultSchema } from '@/models/result.dto'
 
 export default function Page() {
   const form = useForm<InputSchema>({
@@ -24,7 +29,7 @@ export default function Page() {
     defaultValues: InputSchemaDefaultValue
   })
   const { control } = form
-
+  const [result, setResult] = useState<ResultSchema | null>(null)
   const toSHA256Hash = async (record: Record): Promise<string> => {
     const encoder = new TextEncoder()
     const data = encoder.encode(record.initialPosition.sfen)
@@ -36,9 +41,11 @@ export default function Page() {
 
   const handleRecord = (data: InputSchema): Record => {
     const type: RecordFormatType = detectRecordFormat(data.content)
+    console.log('Detected record format:', type)
     switch (type) {
       case RecordFormatType.KIF: {
         const _record: Record | Error = importKIF(data.content)
+        console.log('Imported KIF record:', _record)
         if (_record instanceof Error) {
           console.error('Invalid KIF format:', _record.message)
           throw _record
@@ -102,37 +109,96 @@ export default function Page() {
   }
 
   const onSubmit = async (data: InputSchema) => {
-    const hash: string = await toSHA256Hash(handleRecord(data))
-    console.log('Hash:', hash)
     try {
-      const response = await client.post('/hash', { hash })
-      console.log('Hash check response:', response)
+      const record: Record = handleRecord(data)
+      console.log('Record:', record)
+      const hash: string = await toSHA256Hash(record)
+      console.log('Hash:', hash)
+      setResult(await client.post('/hash', { hash }))
     } catch (error) {
-      console.error('Error checking hash:', error)
+      console.error('Error fetching result:', error)
+      if (error instanceof AxiosError) {
+        if (error.status === 404) {
+          toast('同一作品は見つかりませんでした')
+          return
+        }
+      }
+      if (error instanceof Error) {
+        toast.error('エラーが発生しました')
+      }
     }
   }
 
   return (
-    <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-6'>
-      <h1 className='text-center text-2xl'>詰将棋同一検索ページ</h1>
-      <p className='text-sm'>
-        標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI,
-        JKF)に対応しています。フォームに貼り付けることで完全一致の作品があるかどうかをチェックします。類似サービスとは異なりフォームに入力された棋譜データはブラウザ側でハッシュとして計算されるため、外部に盤面を再現することができる情報は一切送信されないため、安全に同一作があるかどうかを検索することができます。
-      </p>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <FormTextarea control={control} name='content' required placeholder='棋譜情報を入力してください' />
-          <Button type='submit' className='mt-4 w-full'>
-            検索
-          </Button>
-        </form>
-      </Form>
-      <p className='text-sm text-gray-500'>
-        全ての詰将棋作品を網羅しているわけではないため、同一作品が見つからない場合でも、他のサービスやサイトで同じ作品が存在する可能性があります。
-      </p>
-      <p className='text-sm text-gray-500'>
-        このページは詰将棋の同一性を確認するためのものであり、作品の内容や解答を表示するものではありません。作品の内容を確認したい場合は、作品を別途閲覧してください。
-      </p>
-    </div>
+    <>
+      <Dialog
+        open={!!result}
+        onOpenChange={(open) => {
+          if (!open) setResult(null)
+        }}
+      >
+        <DialogContent className='select-none'>
+          <DialogHeader>
+            <DialogTitle>同一作品が既に存在します</DialogTitle>
+            <DialogDescription className='text-sm'>
+              入力された詰将棋と同一の作品がデータベースに登録されています。
+            </DialogDescription>
+          </DialogHeader>
+          {result && (
+            <ul className='mt-4 text-sm leading-6'>
+              <li>
+                <span className='font-semibold'>タイトル:</span> {result.title}
+              </li>
+              <li>
+                <span className='font-semibold'>作者:</span> {result.author}
+              </li>
+              <li>
+                <span className='font-semibold'>作品番号:</span> {result.opus_no}
+              </li>
+              <li>
+                <span className='font-semibold'>発表日:</span> {result.published_at}
+              </li>
+              <li>
+                <span className='font-semibold'>掲載誌/サイト:</span> {result.published_by}
+              </li>
+            </ul>
+          )}
+        </DialogContent>
+      </Dialog>
+      <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-6'>
+        <h1 className='text-center text-2xl'>詰将棋同一検索ページ</h1>
+        <div className='flex flex-col gap-2'>
+          <p className='text-sm'>
+            標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI,
+            JKF)に対応しています。フォームに貼り付けることで完全一致の作品があるかどうかをチェックします。類似サービスとは異なりフォームに入力された棋譜データはブラウザ側でハッシュとして計算されるため、外部に盤面を再現することができる情報は一切送信されないため、安全に同一作があるかどうかを検索することができます。
+          </p>
+          <p className='text-sm'>
+            同一作のチェックは初期配置(盤面+持ち駒)を利用しています。受け方の持ち駒に制約がある場合、正しく判定できない可能性があります。
+          </p>
+        </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <FormTextarea
+              className='!text-xs'
+              control={control}
+              name='content'
+              required
+              placeholder='棋譜情報を入力してください'
+            />
+            <div className='flex justify-center mt-4'>
+              <Button type='submit' className='w-full max-w-xs'>
+                検索
+              </Button>
+            </div>
+          </form>
+        </Form>
+        <p className='text-sm text-gray-500'>
+          全ての詰将棋作品を網羅しているわけではないため、同一作品が見つからない場合でも、他のサービスやサイトで同じ作品が存在する可能性があります。
+        </p>
+        <p className='text-sm text-gray-500'>
+          このページは詰将棋の同一性を確認するためのものであり、作品の内容や解答を表示するものではありません。作品の内容を確認したい場合は、作品を別途閲覧してください。
+        </p>
+      </div>
+    </>
   )
 }

@@ -39,6 +39,7 @@ function FormTextarea<T extends FieldValues>({
               disabled={disabled}
               {...field}
               {...props}
+              className={className}
               onChange={(e) => {
                 const value = e.target.value
                 field.onChange(value === '' ? defaultValue : value) // Handle empty string as null

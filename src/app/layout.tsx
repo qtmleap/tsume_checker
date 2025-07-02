@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Providers from './providers'
+import { Toaster } from 'sonner'
 
 export const metadata: Metadata = {
   title: '詰将棋同一作チェッカー | 詰将棋作品の類似・同一作検索ツール',
@@ -58,6 +59,7 @@ export default function RootLayout({
       </head>
       <body className='bg-muted'>
         <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   )

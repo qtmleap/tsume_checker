@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   const value = await redis.get(data.hash)
 
   if (!value) {
-    return NextResponse.json(undefined, { status: 404 })
+    return NextResponse.json({ message: 'Not Found' }, { status: 404 })
   }
   return NextResponse.json(JSON.parse(value), { status: 200 })
 }

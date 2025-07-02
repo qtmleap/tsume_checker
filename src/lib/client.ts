@@ -1,5 +1,5 @@
 import { HashSchema } from '@/models/hash.dto'
-import { ResponseSchema } from '@/models/response.dto'
+import { ResultSchema } from '@/models/result.dto'
 import { makeApi, Zodios } from '@zodios/core'
 
 const endpoints = makeApi([
@@ -13,7 +13,7 @@ const endpoints = makeApi([
         schema: HashSchema
       }
     ],
-    response: ResponseSchema
+    response: ResultSchema
   }
 ])
 
