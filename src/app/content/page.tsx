@@ -1,15 +1,7 @@
 'use client'
 
-// 1. ──────────────── data source list
-const sources: Array<{ name: string; count: number }> = [
-  { name: 'パラダイス(詰将棋パラダイス) 2024-01〜2024-06', count: 120 },
-  { name: '将棋世界 2023 年度', count: 48 },
-  { name: '大学選手権過去問', count: 350 },
-  { name: '個人サイト「MyShogiProblems」', count: 78 }
-  // …追加ソースがあればここに追記
-]
+const sources: Array<{ name: string; count: number }> = [{ name: 'スマホ版 詰将棋パラダイス', count: 22767 }]
 
-// 2. ──────────────── page component
 export default function Page() {
   return (
     <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-4'>
