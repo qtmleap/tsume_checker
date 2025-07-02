@@ -46,9 +46,9 @@ export default function Page() {
     <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-4'>
       <h1 className='text-center text-2xl font-bold'>詰将棋同一検索ページ</h1>
       <div className='flex flex-col gap-2'>
-        <p className='text-sm'>標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI, JKF)に対応しています。</p>
-        <p className='text-sm'>
-          同一作のチェックは初期配置(盤面+持ち駒)を利用しています。受け方の持ち駒に制約がある場合、正しく判定できない可能性があります。
+        <p className='text-xs'>標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI, JKF)に対応しています。</p>
+        <p className='text-xs'>
+          入力された棋譜データはハッシュ化して、ブラウザ上でデータベースと照合するためサーバーに入力されたデータは一切送信されません。
         </p>
       </div>
       <Form {...form}>
