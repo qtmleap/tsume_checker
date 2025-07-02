@@ -74,6 +74,8 @@ jobs:
       - name: Install
         run: bun install --ignore-scripts
       - name: Build
+        env:
+          RAILS_URL: {{ secrets.RAILS_URL }}
         run: |
           bun run build
   prune:
