@@ -48,7 +48,7 @@ export default function Page() {
       <div className='flex flex-col gap-2'>
         <p className='text-xs'>標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI, JKF)に対応しています。</p>
         <p className='text-xs'>
-          入力された棋譜データはハッシュ化して、ブラウザ上でデータベースと照合するためサーバーに入力されたデータは一切送信されません。
+          入力された棋譜データはハッシュ化した上でデータベースと照合するため、本サービスを利用してデータが外部に洩れる心配はありません。
         </p>
       </div>
       <Form {...form}>
