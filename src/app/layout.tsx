@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Toaster } from 'sonner'
 import Providers from './providers'
 
 export const metadata: Metadata = {
@@ -56,8 +57,9 @@ export default function RootLayout({
           rel='stylesheet'
         />
       </head>
-      <body>
+      <body className='bg-muted'>
         <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   )

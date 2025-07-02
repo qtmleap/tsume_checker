@@ -1,8 +1,8 @@
-import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import type * as React from 'react'
 import type * as CheckboxPrimitive from '@radix-ui/react-checkbox'
+import type * as React from 'react'
+import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
 import { Checkbox } from '../ui/checkbox'
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 
 type CheckboxProps<T extends FieldValues> = React.ComponentProps<typeof CheckboxPrimitive.Root> & {
   label?: string

@@ -132,6 +132,8 @@ web_modules/
 
 # Optional npm cache directory
 .npm
+.npmrc
+!.npmrc.example
 
 # Optional eslint cache
 .eslintcache

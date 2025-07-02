@@ -1,22 +1,21 @@
 'use client'
 
-import FormTextarea from '@/components/form/textarea'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { InputSchema, InputSchemaDefaultValue } from '@/models/input.dto'
-import { Form } from '@/components/ui/form'
+import { parse } from 'csv-parse/sync'
+import { Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import FormTextarea from '@/components/form/textarea'
 import { Button } from '@/components/ui/button'
-import {
-  detectRecordFormat,
-  importCSA,
-  importJKFString,
-  importKI2,
-  importKIF,
-  Position,
-  Record,
-  RecordFormatType
-} from 'tsshogi'
-import { client } from '@/lib/client'
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Form } from '@/components/ui/form'
+import { db, type Mate } from '@/lib/db'
+import { toSHA256Hash } from '@/lib/hash'
+import { createRecord } from '@/lib/record'
+import { InputSchema, InputSchemaDefaultValue } from '@/models/input.dto'
+import type { ResultSchema } from '@/models/result.dto'
 
 export default function Page() {
   const form = useForm<InputSchema>({
@@ -24,109 +23,102 @@ export default function Page() {
     defaultValues: InputSchemaDefaultValue
   })
   const { control } = form
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false)
+  const [_result, _setResult] = useState<ResultSchema | null>(null)
 
-  const toSHA256Hash = async (record: Record): Promise<string> => {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(record.initialPosition.sfen)
-    const buffer = await crypto.subtle.digest('SHA-256', data)
-    return Array.from(new Uint8Array(buffer))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
-  }
-
-  const handleRecord = (data: InputSchema): Record => {
-    const type: RecordFormatType = detectRecordFormat(data.content)
-    switch (type) {
-      case RecordFormatType.KIF: {
-        const _record: Record | Error = importKIF(data.content)
-        if (_record instanceof Error) {
-          console.error('Invalid KIF format:', _record.message)
-          throw _record
-        }
-        return _record
+  const onClick = async () => {
+    const response = await fetch('data/20250701.csv')
+    const text = await response.text()
+    const results = parse(text, { columns: true, skip_empty_lines: true, trim: true })
+    try {
+      await db.mates.bulkPut(
+        // biome-ignore lint/suspicious/noExplicitAny: ignore
+        results.map((result: any) => ({
+          opus_no: Number.parseInt(result.opus_no, 10),
+          hash: result.hash,
+          source: result.source
+        }))
+      )
+      toast.success('データベースを更新しました', {
+        duration: 3000
+      })
+    } catch (error) {
+      console.error('Error updating database:', error)
+      if (error instanceof Error) {
+        toast.error('データベースの更新に失敗しました')
       }
-      case RecordFormatType.KI2: {
-        const _record: Record | Error = importKI2(data.content)
-        if (_record instanceof Error) {
-          console.error('Invalid KI2 format:', _record.message)
-          throw _record
-        }
-        return _record
-      }
-      case RecordFormatType.CSA: {
-        const _record: Record | Error = importCSA(data.content)
-        if (_record instanceof Error) {
-          console.error('Invalid CSA format:', _record.message)
-          throw _record
-        }
-        return _record
-      }
-      case RecordFormatType.SFEN: {
-        const _position: Position | null = Position.newBySFEN(data.content)
-        if (_position === null) {
-          console.error('Invalid SFEN format:', data.content)
-          throw new Error('Invalid SFEN format')
-        }
-        const _record: Record | Error = new Record(_position)
-        if (_record instanceof Error) {
-          console.error('Invalid SFEN format:', _record.message)
-          throw _record
-        }
-        return _record
-      }
-      case RecordFormatType.USI: {
-        const _record: Record | Error = Record.newByUSI(data.content)
-        if (_record instanceof Error) {
-          console.error('Invalid SFEN format:', _record.message)
-          throw _record
-        }
-        return _record
-      }
-      case RecordFormatType.JKF: {
-        const _record: Record | Error = importJKFString(data.content)
-        if (_record instanceof Error) {
-          console.error('Invalid SFEN format:', _record.message)
-          throw _record
-        }
-        return _record
-      }
-      case RecordFormatType.USEN: {
-        const _record: Record | Error = Record.newByUSEN(data.content)
-        if (_record instanceof Error) {
-          console.error('Invalid SFEN format:', _record.message)
-          throw _record
-        }
-        return _record
-      }
+    } finally {
+      setDialogOpen(false)
     }
   }
 
   const onSubmit = async (data: InputSchema) => {
-    const hash: string = await toSHA256Hash(handleRecord(data))
-    console.log('Hash:', hash)
-    try {
-      const response = await client.post('/hash', { hash })
-      console.log('Hash check response:', response)
-    } catch (error) {
-      console.error('Error checking hash:', error)
+    const hash: string = await toSHA256Hash(createRecord(data))
+    const result: Mate | undefined = await db.mates.get(hash)
+    if (result === undefined) {
+      toast.success('同一作品は見つかりませんでした')
+    } else {
+      toast.info('同一作品が見つかりました')
     }
   }
 
   return (
-    <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-6'>
-      <h1 className='text-center text-2xl'>詰将棋同一検索ページ</h1>
-      <p className='text-sm'>
-        標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI,
-        JKF)に対応しています。フォームに貼り付けることで完全一致の作品があるかどうかをチェックします。フォームに入力された棋譜データはブラウザ側でハッシュとして計算されるため、外部に盤面を再現することができる情報は一切送信されません。
-      </p>
+    <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-4'>
+      <h1 className='text-center text-2xl font-bold'>詰将棋同一検索ページ</h1>
+      <div className='flex flex-col gap-2'>
+        <p className='text-xs'>標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI, JKF)に対応しています。</p>
+        <p className='text-xs'>
+          入力された棋譜データはハッシュ化した上でデータベースと照合するため、本サービスを利用してデータが外部に洩れる心配はありません。
+        </p>
+        <p className='text-xs'>
+          利用している詰将棋データベースは
+          <Link href='/content' rel='noopener noreferrer' className='underline text-primary'>
+            こちら
+          </Link>
+          です。
+        </p>
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <FormTextarea control={control} name='content' required placeholder='棋譜情報を入力してください' />
-          <Button type='submit' className='mt-4 w-full'>
-            検索
-          </Button>
+          <FormTextarea
+            className='!text-xs'
+            control={control}
+            name='content'
+            required
+            placeholder='棋譜情報を入力してください'
+          />
+          <div className='flex justify-center mt-4 gap-4'>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button type='button' variant='destructive' onClick={onClick}>
+                  データベース更新
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                className='flex flex-col items-center gap-4 select-none [&>[data-slot="dialog-close"]]:hidden'
+                onInteractOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+              >
+                <DialogTitle>データベース更新中</DialogTitle>
+                <DialogDescription />
+                <Loader2 className='h-8 w-8 animate-spin' />
+                <p className='text-sm'>しばらくお待ち下さい...</p>
+              </DialogContent>
+            </Dialog>
+            <Button type='submit' className='w-full'>
+              検索
+            </Button>
+          </div>
         </form>
       </Form>
+      <div className='flex flex-col gap-2 text-xs text-gray-500'>
+        <p>
+          全ての詰将棋作品を網羅しているわけではないため、同一作品が見つからない場合でも、他のサービスやサイトで同じ作品が存在する可能性があります。
+        </p>
+        <p>
+          このページは詰将棋の同一性を確認するためのものであり、作品の内容や解答を表示するものではありません。作品の内容を確認したい場合は、作品を別途閲覧してください。
+        </p>
+      </div>
     </div>
   )
 }

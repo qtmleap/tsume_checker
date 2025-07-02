@@ -1,7 +1,7 @@
-import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import type React from 'react'
+import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 
 type InputProps<T extends FieldValues> = React.ComponentProps<'input'> & {
   label?: string

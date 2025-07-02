@@ -9,5 +9,8 @@ services:
     tty: true
     stdin_open: true
 
+  redis:
+    image: redis:latest
+
 volumes:
   node_modules:
