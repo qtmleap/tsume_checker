@@ -130,7 +130,7 @@ export default function Page() {
 
   return (
     <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-4'>
-      <h1 className='text-center text-2xl'>詰将棋同一検索ページ</h1>
+      <h1 className='text-center text-2xl font-bold'>詰将棋同一検索ページ</h1>
       <div className='flex flex-col gap-2'>
         <p className='text-sm'>
           標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI,
@@ -156,12 +156,14 @@ export default function Page() {
           </div>
         </form>
       </Form>
-      <p className='text-xs text-gray-500'>
-        全ての詰将棋作品を網羅しているわけではないため、同一作品が見つからない場合でも、他のサービスやサイトで同じ作品が存在する可能性があります。
-      </p>
-      <p className='text-xs text-gray-500'>
-        このページは詰将棋の同一性を確認するためのものであり、作品の内容や解答を表示するものではありません。作品の内容を確認したい場合は、作品を別途閲覧してください。
-      </p>
+      <div className='flex flex-col gap-2 text-xs text-gray-500'>
+        <p>
+          全ての詰将棋作品を網羅しているわけではないため、同一作品が見つからない場合でも、他のサービスやサイトで同じ作品が存在する可能性があります。
+        </p>
+        <p>
+          このページは詰将棋の同一性を確認するためのものであり、作品の内容や解答を表示するものではありません。作品の内容を確認したい場合は、作品を別途閲覧してください。
+        </p>
+      </div>
     </div>
   )
 }
