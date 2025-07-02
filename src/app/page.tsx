@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import FormTextarea from '@/components/form/textarea'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -49,6 +50,13 @@ export default function Page() {
         <p className='text-xs'>標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI, JKF)に対応しています。</p>
         <p className='text-xs'>
           入力された棋譜データはハッシュ化した上でデータベースと照合するため、本サービスを利用してデータが外部に洩れる心配はありません。
+        </p>
+        <p className='text-xs'>
+          利用している詰将棋データベースは
+          <Link href='/content' rel='noopener noreferrer' className='underline text-primary'>
+            こちら
+          </Link>
+          です。
         </p>
       </div>
       <Form {...form}>
