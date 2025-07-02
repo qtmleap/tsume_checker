@@ -48,6 +48,13 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+      - name: Setup Node (GitHub Packages)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+          scope: '@mito-shogi'
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Cache bun dependencies
         uses: actions/cache@v4
         with:
@@ -58,11 +65,9 @@ jobs:
           restore-keys: |
             bun-${{ runner.os }}-
       - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bun install --frozen-lockfile --ignore-scripts
-        with:
-          registry-url: https://npm.pkg.github.com
-          scope: '@mito-shogi'
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Test
         run: |
           bun test
