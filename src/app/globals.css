@@ -213,5 +213,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'M PLUS 1 Code', monospace;
   }
 }

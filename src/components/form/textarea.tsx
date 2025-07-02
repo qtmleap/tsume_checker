@@ -1,9 +1,10 @@
-import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import type React from 'react'
-import { Input } from '@/components/ui/input'
+'use client'
 
-type InputProps<T extends FieldValues> = React.ComponentProps<'input'> & {
+import type { Control, FieldError, FieldValues, Path } from 'react-hook-form'
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Textarea } from '../ui/textarea'
+
+type TextareaProps<T extends FieldValues> = React.ComponentProps<'textarea'> & {
   label?: string
   description?: string
   name: Path<T>
@@ -12,20 +13,18 @@ type InputProps<T extends FieldValues> = React.ComponentProps<'input'> & {
   defaultValue?: string | null
 }
 
-function FormInput<T extends FieldValues>({
+function FormTextarea<T extends FieldValues>({
   className,
-  type,
-  control,
-  name,
   label,
-  placeholder,
   disabled,
-  error,
   required,
+  placeholder,
   description,
+  control,
   defaultValue = undefined,
+  name,
   ...props
-}: InputProps<T>) {
+}: TextareaProps<T>) {
   return (
     <FormField
       control={control}
@@ -34,15 +33,15 @@ function FormInput<T extends FieldValues>({
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Input
+            <Textarea
+              placeholder={placeholder}
               required={required}
               disabled={disabled}
-              placeholder={placeholder}
               {...field}
               {...props}
               onChange={(e) => {
                 const value = e.target.value
-                field.onChange(value === '' ? defaultValue : value)
+                field.onChange(value === '' ? defaultValue : value) // Handle empty string as null
               }}
             />
           </FormControl>
@@ -54,4 +53,4 @@ function FormInput<T extends FieldValues>({
   )
 }
 
-export { FormInput }
+export default FormTextarea

@@ -1,104 +1,132 @@
 'use client'
-import { FormInput } from '@/components/form/input'
-import { FrameworkEnum, type InputTest, InputTestSchema } from '@/types/input.dto'
+
+import FormTextarea from '@/components/form/textarea'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button } from '@/components/ui/button'
+import { InputSchema, InputSchemaDefaultValue } from '@/models/input.dto'
 import { Form } from '@/components/ui/form'
-import { FormCheckbox } from '@/components/form/checkbox'
-import { FormRadioGroup } from '@/components/form/radio-group'
-import { FormSelect } from '@/components/form/select'
-import { FormSwitch } from '@/components/form/switch'
-import { FormDatePicker } from '@/components/form/date-picker'
+import { Button } from '@/components/ui/button'
+import {
+  detectRecordFormat,
+  importCSA,
+  importJKFString,
+  importKI2,
+  importKIF,
+  Position,
+  Record,
+  RecordFormatType
+} from 'tsshogi'
+import { client } from '@/lib/client'
 
 export default function Page() {
-  const form = useForm<InputTest>({
-    resolver: zodResolver(InputTestSchema),
-    defaultValues: {}
+  const form = useForm<InputSchema>({
+    resolver: zodResolver(InputSchema),
+    defaultValues: InputSchemaDefaultValue
   })
-  const {
-    control,
-    getValues,
-    handleSubmit,
-    formState: { errors }
-  } = form
-  const handleClick = async () => {
-    await handleSubmit((data) => {
-      console.log('data', data)
-    })()
-    console.log('values', getValues())
-    console.error('errors', errors)
+  const { control } = form
+
+  const toSHA256Hash = async (record: Record): Promise<string> => {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(record.initialPosition.sfen)
+    const buffer = await crypto.subtle.digest('SHA-256', data)
+    return Array.from(new Uint8Array(buffer))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
   }
+
+  const handleRecord = (data: InputSchema): Record => {
+    const type: RecordFormatType = detectRecordFormat(data.content)
+    switch (type) {
+      case RecordFormatType.KIF: {
+        const _record: Record | Error = importKIF(data.content)
+        if (_record instanceof Error) {
+          console.error('Invalid KIF format:', _record.message)
+          throw _record
+        }
+        return _record
+      }
+      case RecordFormatType.KI2: {
+        const _record: Record | Error = importKI2(data.content)
+        if (_record instanceof Error) {
+          console.error('Invalid KI2 format:', _record.message)
+          throw _record
+        }
+        return _record
+      }
+      case RecordFormatType.CSA: {
+        const _record: Record | Error = importCSA(data.content)
+        if (_record instanceof Error) {
+          console.error('Invalid CSA format:', _record.message)
+          throw _record
+        }
+        return _record
+      }
+      case RecordFormatType.SFEN: {
+        const _position: Position | null = Position.newBySFEN(data.content)
+        if (_position === null) {
+          console.error('Invalid SFEN format:', data.content)
+          throw new Error('Invalid SFEN format')
+        }
+        const _record: Record | Error = new Record(_position)
+        if (_record instanceof Error) {
+          console.error('Invalid SFEN format:', _record.message)
+          throw _record
+        }
+        return _record
+      }
+      case RecordFormatType.USI: {
+        const _record: Record | Error = Record.newByUSI(data.content)
+        if (_record instanceof Error) {
+          console.error('Invalid SFEN format:', _record.message)
+          throw _record
+        }
+        return _record
+      }
+      case RecordFormatType.JKF: {
+        const _record: Record | Error = importJKFString(data.content)
+        if (_record instanceof Error) {
+          console.error('Invalid SFEN format:', _record.message)
+          throw _record
+        }
+        return _record
+      }
+      case RecordFormatType.USEN: {
+        const _record: Record | Error = Record.newByUSEN(data.content)
+        if (_record instanceof Error) {
+          console.error('Invalid SFEN format:', _record.message)
+          throw _record
+        }
+        return _record
+      }
+    }
+  }
+
+  const onSubmit = async (data: InputSchema) => {
+    const hash: string = await toSHA256Hash(handleRecord(data))
+    console.log('Hash:', hash)
+    try {
+      const response = await client.post('/hash', { hash })
+      console.log('Hash check response:', response)
+    } catch (error) {
+      console.error('Error checking hash:', error)
+    }
+  }
+
   return (
-    <>
-      <div>
-        <Form {...form}>
-          <FormInput label='string' name='string.string' control={control} />
-          <FormInput label='string,optional' name='string.string_optional' control={control} />
-          <FormInput label='string,nullable' name='string.string_nullable' control={control} />
-          <FormInput label='string,nullish' name='string.string_nullish' control={control} />
-          <FormInput label='string,nonempty,' name='string.string_nonempty' control={control} />
-          <FormInput label='string,nonempty,optional' name='string.string_nonempty_optional' control={control} />
-          <FormInput label='string,nonempty,nullable' name='string.string_nonempty_nullable' control={control} />
-          <FormInput label='string,nonempty,nullish' name='string.string_nonempty_nullish' control={control} />
-          <FormCheckbox label='array' name='array.array' options={FrameworkEnum.options} control={control} />
-          <FormCheckbox
-            label='array.optional'
-            name='array.array_optional'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormCheckbox
-            label='array.nullable'
-            name='array.array_nullable'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormCheckbox
-            label='array.nullish'
-            name='array.array_nullish'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormCheckbox
-            label='array.nonempty'
-            name='array.array_nonempty'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormCheckbox
-            label='array.nonempty_optional'
-            name='array.array_nonempty_optional'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormCheckbox
-            label='array.nonempty_nullable'
-            name='array.array_nonempty_nullable'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormCheckbox
-            label='array.nonempty_nullish'
-            name='array.array_nonempty_nullish'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormRadioGroup
-            label='checkbox.array'
-            name='checkbox.array'
-            options={FrameworkEnum.options}
-            control={control}
-          />
-          <FormSelect label='select.string' name='select.string' options={FrameworkEnum.options} control={control} />
-          <FormSwitch label='boolean' name='boolean.boolean' control={control} />
-          {/* <FormSwitch label='boolean' name='boolean.boolean_optional' control={control} />
-          <FormSwitch label='boolean' name='boolean.boolean_nullable' control={control} />
-          <FormSwitch label='boolean' name='boolean.boolean_nullish' control={control} /> */}
-          <FormDatePicker label='datetime' name='datetime.datetime' control={control} />
-        </Form>
-        <Button onClick={handleClick}>検証</Button>
-      </div>
-    </>
+    <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-6'>
+      <h1 className='text-center text-2xl'>詰将棋同一検索ページ</h1>
+      <p className='text-sm'>
+        標準的な棋譜形式(KIF, KI2, CSA, SFEN/USI,
+        JKF)に対応しています。フォームに貼り付けることで完全一致の作品があるかどうかをチェックします。フォームに入力された棋譜データはブラウザ側でハッシュとして計算されるため、外部に盤面を再現することができる情報は一切送信されません。
+      </p>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <FormTextarea control={control} name='content' required placeholder='棋譜情報を入力してください' />
+          <Button type='submit' className='mt-4 w-full'>
+            検索
+          </Button>
+        </form>
+      </Form>
+    </div>
   )
 }
