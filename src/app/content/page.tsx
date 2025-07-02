@@ -7,8 +7,11 @@ export default function Page() {
     <div className='flex flex-col max-w-xl w-full mx-auto p-6 gap-4'>
       <h1 className='text-center text-2xl font-bold'>収録データソース一覧</h1>
       <div className='flex flex-col gap-2'>
-        <p className='text-sm text-muted-foreground text-center'>
-          現在ハッシュ検索の対象となっている各データソースと収録問題数です。
+        <p className='text-sm text-muted-foreground'>
+          現在ハッシュ検索の対象となっている各データソースと収録問題数です。収録にご協力いただける詰将棋データベースをお持ちの方がいらっしゃいましたらご連絡お願いします。
+        </p>
+        <p className='text-sm text-muted-foreground'>
+          収録にご協力いただける詰将棋データベースをお持ちの方がいらっしゃいましたらご連絡お願いします。
         </p>
       </div>
 
