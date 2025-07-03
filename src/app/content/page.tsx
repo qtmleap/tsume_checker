@@ -1,6 +1,9 @@
 'use client'
 
-const sources: Array<{ name: string; count: number }> = [{ name: 'スマホ版 詰将棋パラダイス', count: 22767 }]
+const sources: Array<{ name: string; count: number }> = [
+  { name: 'スマホ版 詰将棋パラダイス', count: 22767 },
+  { name: '日本将棋連盟 まいにち詰将棋', count: 2896 }
+]
 
 export default function Page() {
   return (
