@@ -22,15 +22,15 @@ export const metadata: Metadata = {
   openGraph: {
     title: '詰将棋同一作チェッカー',
     description: '詰将棋の同一作・類似作を簡単に検索できる無料Webツール',
-    url: 'https://your-app-url.example.com',
+    url: 'https://mc.qleap.jp',
+    locale: 'ja_JP',
     siteName: '詰将棋同一作チェッカー',
     type: 'website',
     images: [
       {
-        url: '/public/globe.svg',
+        url: 'https://mc.qleap.jp/og_matechecker.png',
         width: 1200,
-        height: 630,
-        alt: '詰将棋同一作チェッカー ロゴ'
+        height: 630
       }
     ]
   },
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '詰将棋同一作チェッカー',
     description: '詰将棋の同一作・類似作を簡単に検索できる無料Webツール',
-    images: ['/public/globe.svg']
+    images: ['https://mc.qleap.jp/og_matechecker.png']
   }
 }
 
