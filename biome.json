@@ -36,7 +36,8 @@
   },
   "files": {
     "includes": [
-      "**/src/**/*.ts",
+      "messages/*.json",
+      "**/src/**/*.{ts,tsx,json,css,scss,sass}",
       "**/src/**/*.tsx",
       "!**/node_modules/**/*",
       "!**/.next/**/*"

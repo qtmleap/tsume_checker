@@ -1,9 +1,8 @@
 'use client'
+import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
 
-const sources: Array<{ name: string; count: number }> = [
-  { name: 'スマホ版 詰将棋パラダイス', count: 22767 },
-  { name: '日本将棋連盟 まいにち詰将棋', count: 2896 }
-]
+const TBody = dynamic(() => import('./body'), { ssr: false })
 
 export default function Page() {
   return (
@@ -23,14 +22,9 @@ export default function Page() {
             <th className='text-right py-2 px-3'>収録数</th>
           </tr>
         </thead>
-        <tbody>
-          {sources.map((s) => (
-            <tr key={s.name} className='border-b last:border-none'>
-              <td className='py-2 px-3'>{s.name}</td>
-              <td className='py-2 px-3 text-right'>{s.count.toLocaleString()} 問</td>
-            </tr>
-          ))}
-        </tbody>
+        <Suspense>
+          <TBody />
+        </Suspense>
       </table>
     </div>
   )
