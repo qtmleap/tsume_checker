@@ -1,2 +1,8 @@
-bun test
+# `bun test` exits 1 when it matches no test files, which blocks every
+# commit in a repo that has none yet. Run it only when there is something
+# to run — the first test file added turns it back on by itself.
+if git ls-files | grep -qE '\.(test|spec)\.(js|jsx|ts|tsx)$'; then
+  bun test
+fi
+
 bun lint-staged
