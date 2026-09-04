@@ -15,6 +15,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "browser:install": "playwright install chromium",
     "prepare": "husky"
   },
   "dependencies": {
@@ -60,6 +61,7 @@
     "@types/react-dom": "^19.1.6",
     "commitizen": "^4.3.1",
     "husky": "^9.1.7",
+    "playwright": "^1.62.1",
     "postcss": "^8.5.6",
     "rimraf": "^6.0.1",
     "tailwindcss": "^4.1.11",
