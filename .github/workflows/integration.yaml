@@ -50,7 +50,14 @@ jobs:
           bun-version: latest
       - name: Test
         run: |
-          bun test
+          # `bun test` exits 1 when it matches no test files. Skip it while
+          # the repo has none rather than failing every run; the first test
+          # file added turns it back on by itself.
+          if git ls-files | grep -qE '\.(test|spec)\.(js|jsx|ts|tsx)$'; then
+            bun test
+          else
+            echo "no test files yet — skipping"
+          fi
   build:
     name: Build
     runs-on: ubuntu-24.04
