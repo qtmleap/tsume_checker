@@ -1,6 +1,7 @@
-## Next.js Template Project
+# 詰将棋チェッカー (tsume_checker)
 
-TypeScript + Bun + NextJS + TailwindCSSで動作するSSRのウェブサイトです
+詰将棋の詰み判定を行う Next.js 製ウェブアプリケーションです。
+TypeScript + Bun + Next.js + Tailwind CSS で動作する SSR 構成を採用しています。
 
 ### 技術スタック
 
@@ -22,8 +23,8 @@ TypeScript + Bun + NextJS + TailwindCSSで動作するSSRのウェブサイト�
 - [PR Agent](https://github.com/Codium-ai/pr-agent)
   - LLMがコードレビューを実行
 - [Shadcn](https://ui.shadcn.com/)
-  - 軽量なTailwindCSSと親和性の高いフレームワーク
-- [TailwindCSS](https://tailwindcss.com/)
+  - 軽量なTailwind CSSと親和性の高いフレームワーク
+- [Tailwind CSS](https://tailwindcss.com/)
   - モダンなユーティリティファーストなCSSフレームワーク
 - [React Hook Form](https://react-hook-form.com/)
   - Zodと組み合わせるフォーム管理ライブラリ
